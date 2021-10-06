@@ -1,0 +1,156 @@
+#include <iostream>
+#include <vector>
+#include <ctime>
+using namespace std;
+vector<vector<int>> full(int size)
+{
+	vector<vector<int>> matrix(size, vector<int>(size));
+	for (int j = 0; j < size; j++)
+		for (int k = 0; k < size; k++)
+			matrix[j][k] = rand() % 10;
+	return matrix;
+}
+
+vector<vector<int>> diff(vector<vector<int>> a, vector<vector<int>> b, int size)
+{
+	vector<vector<int>> c(size, vector<int>(size, 0));
+	for (int i = 0; i < size; i++)
+		for (int j = 0; j < size; j++)
+			c[i][j] = a[i][j] - b[i][j];
+	return c;
+}
+
+vector<vector<int>> sum(vector<vector<int>> a, vector<vector<int>> b, int size)
+{
+	vector<vector<int>> c(size, vector<int>(size, 0));
+	for (int i = 0; i < size; i++)
+		for (int j = 0; j < size; j++)
+			c[i][j] = a[i][j] + b[i][j];
+	return c;
+}
+
+vector<vector<int>> result(vector<vector<int>> a, vector<vector<int>> b, int size, int& counter)
+{
+	if (size == 2)
+	{
+		vector<vector<int>> c(2, vector<int>(2, 0));
+		int p1 = (a[0][0] + a[1][1]) * (b[0][0] + b[1][1]);
+		int p2 = (a[1][0] + a[1][1]) * b[0][0];
+		int p3 = a[0][0] * (b[0][1] - b[1][1]);
+		int p4 = a[1][1] * (b[1][0] - b[0][0]);
+		int p5 = (a[0][0] + a[0][1]) * b[1][1];
+		int p6 = (a[1][0] - a[0][0]) * (b[0][0] + b[0][1]);
+		int p7 = (a[0][1] - a[1][1]) * (b[1][0] + b[1][1]);
+		c[0][0] = p1 + p4 - p5 + p7;
+		c[0][1] = p3 + p5;
+		c[1][0] = p2 + p4;
+		c[1][1] = p1 - p2 + p3 + p6;
+		counter += 25;
+		return c;
+	}
+	else
+	{
+		vector<vector<int>> A11(size / 2, vector<int>(size / 2, 0));
+		vector<vector<int>> B11(size / 2, vector<int>(size / 2, 0));
+		for (int i = 0; i < size / 2; i++)
+			for (int j = 0; j < size / 2; j++)
+			{
+				A11[i][j] = a[i][j];
+				B11[i][j] = b[i][j];
+			}
+		vector<vector<int>> A12(size / 2, vector<int>(size / 2, 0));
+		vector<vector<int>> B12(size / 2, vector<int>(size / 2, 0));
+		for (int i = 0; i < size / 2; i++)
+			for (int j = size / 2; j < size; j++)
+			{
+				A12[i][j - (size / 2)] = a[i][j];
+				B12[i][j - (size / 2)] = b[i][j];
+			}
+		vector<vector<int>> A21(size / 2, vector<int>(size / 2, 0));
+		vector<vector<int>> B21(size / 2, vector<int>(size / 2, 0));
+		for (int i = size / 2; i < size; i++)
+			for (int j = 0; j < size / 2; j++)
+			{
+				A21[i - (size / 2)][j] = a[i][j];
+				B21[i - (size / 2)][j] = b[i][j];
+			}
+		vector<vector<int>> A22(size / 2, vector<int>(size / 2, 0));
+		vector<vector<int>> B22(size / 2, vector<int>(size / 2, 0));
+		for (int i = size / 2; i < size; i++) 
+			for (int j = size / 2; j < size; j++)
+			{
+				A22[i - (size / 2)][j - (size / 2)] = a[i][j];
+				B22[i - (size / 2)][j - (size / 2)] = b[i][j];
+			}
+		vector<vector<int>> P1(size / 2, vector<int>(size / 2));
+		P1 = result(sum(A11, A22, size / 2), sum(B11, B22, size / 2), size / 2, counter);
+		vector<vector<int>> P2(size / 2, vector<int>(size / 2));
+		P2 = result(sum(A21, A22, size / 2), B11, size / 2, counter);
+		vector<vector<int>> P3(size / 2, vector<int>(size / 2));
+		P3 = result(A11, diff(B12, B22, size / 2), size / 2, counter);
+		vector<vector<int>> P4(size / 2, vector<int>(size / 2));
+		P4 = result(A22, diff(B21, B11, size / 2), size / 2, counter);
+		vector<vector<int>> P5(size / 2, vector<int>(size / 2));
+		P5 = result(sum(A11, A12, size / 2), B22, size / 2, counter);
+		vector<vector<int>> P6(size / 2, vector<int>(size / 2));
+		P6 = result(diff(A21, A11, size / 2), sum(B11, B12, size / 2), size / 2, counter);
+		vector<vector<int>> P7(size / 2, vector<int>(size / 2));
+		P7 = result(diff(A12, A22, size / 2), sum(B21, B22, size / 2), size / 2, counter);
+		vector<vector<int>> C11(size / 2, vector<int>(size / 2));
+		C11 = sum(diff(sum(P1, P4, size / 2), P5, size / 2), P7, size / 2);
+		vector<vector<int>> C12(size / 2, vector<int>(size / 2));
+		C12 = sum(P3, P5, size / 2);
+		vector<vector<int>> C21(size / 2, vector<int>(size / 2));
+		C21 = sum(P2, P4, size / 2);
+		vector<vector<int>> C22(size / 2, vector<int>(size / 2));
+		C22 = sum(sum(diff(P1, P2, size / 2), P3, size / 2), P6, size / 2);
+		vector<vector<int>> C(size, vector<int>(size, 0));
+		for (int i = 0; i < size / 2; i++)
+			for (int j = 0; j < size / 2; j++)
+			{
+				C[i][j] = C11[i][j];
+			}
+		for (int i = 0; i < size / 2; i++)
+			for (int j = size / 2; j < size; j++)
+			{
+				C[i][j] = C12[i][j - (size / 2)];
+			}
+		for (int i = size / 2; i < size; i++)
+			for (int j = 0; j < size / 2; j++)
+			{
+				C[i][j] = C21[i - (size / 2)][j];
+			}
+		for (int i = size / 2; i < size; i++)
+			for (int j = size / 2; j < size; j++)
+			{
+				C[i][j] = C22[i - (size / 2)][j - (size / 2)];
+			}
+		return C;
+	}
+}
+
+void print_result(vector<vector<int>> result)
+{
+	for (vector<int> i : result) 
+	{
+		for (int j : i)
+			cout << j << " ";
+		cout << endl;
+	}
+}
+
+
+int main()
+{
+	srand(time(NULL));
+	for (int i = 2; i <= 128; i += 2)
+	{
+		int counter = 0;
+		vector<vector<int>> matrixA = full(i);
+		vector<vector<int>> matrixB = full(i);
+		vector<vector<int>> matrixC(i, vector<int>(i, 0));
+		matrixC = result(matrixA, matrixB, i, counter);
+		cout << "n = " << i << ": " << counter;
+	}
+	system("pause");
+}
