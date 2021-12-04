@@ -9,6 +9,7 @@ vector<vector<int>> full(int size)
 		for (int k = 0; k < size; k++)
 			matrix[j][k] = rand() % 10;
 	return matrix;
+	
 }
 
 vector<vector<int>> diff(vector<vector<int>> a, vector<vector<int>> b, int size)
